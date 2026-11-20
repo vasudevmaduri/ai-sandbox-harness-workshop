@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FIG. 01 — AI Sandbox Containment Blueprint</title>
+  <style>
+    :root {
+      --paper: #f6f4ee;
+      --card: #fffdf9;
+      --ink: #161616;
+      --ink-soft: #4a4a44;
+      --rule: #d4cfc3;
+      --rule-strong: #161616;
+      --vermilion: #c2331a;
+      --vermilion-tint: #fdece8;
+      --forest: #1f6b45;
+      --forest-tint: #e8f5ee;
+      --ochre: #9a5b08;
+      --ochre-tint: #fdf3dc;
+      --cobalt: #1b4b8a;
+      --cobalt-tint: #eaf1fb;
+      --mono: "Cascadia Mono", Consolas, "SFMono-Regular", Menlo, monospace;
+      --serif: Georgia, "Iowan Old Style", "Times New Roman", serif;
+      --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--paper);
+      background-image: radial-gradient(#cfc9bc 0.9px, transparent 0.9px);
+      background-size: 20px 20px;
+      color: var(--ink);
+      font-family: var(--sans);
+      line-height: 1.45;
+      padding: 22px 26px 36px;
+    }
+
+    /* Masthead — Technical Manual Style */
+    .masthead {
+      max-width: 1360px;
+      margin: 0 auto 18px;
+      border-top: 3px solid var(--ink);
+      border-bottom: 1.5px solid var(--ink);
+      padding: 14px 0 12px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 16px;
+      align-items: end;
+    }
+    .kicker {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--ink-soft);
+      margin-bottom: 4px;
+    }
+    h1 {
+      font-family: var(--serif);
+      font-size: 1.75rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+    }
+    .subtitle {
+      font-size: 0.88rem;
+      color: var(--ink-soft);
+      margin-top: 4px;
+      max-width: 72ch;
+    }
+
+    /* Mechanical Level Switcher */
+    .switch-rack {
+      display: flex;
+      border: 1.5px solid var(--ink);
+      background: var(--card);
+    }
+    .lvl-btn {
+      appearance: none;
+      border: none;
+      border-right: 1px solid var(--rule);
+      background: transparent;
+      color: var(--ink-soft);
+      font-family: var(--mono);
+      font-size: 0.76rem;
+      padding: 10px 13px;
+      cursor: pointer;
+      text-align: left;
+      transition: background 0.12s ease, color 0.12s ease;
+    }
+    .lvl-btn:last-child { border-right: none; }
+    .lvl-btn strong { display: block; font-size: 0.82rem; color: var(--ink); }
+    .lvl-btn:hover { background: #efebe1; }
+    .lvl-btn.active {
+      background: var(--ink);
+      color: #d4d0c5;
+    }
+    .lvl-btn.active strong { color: #ffffff; }
+
+    /* Workspace Grid */
+    .sheet {
+      max-width: 1360px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 350px;
+      gap: 20px;
+      align-items: start;
+    }
+    @media (max-width: 1120px) {
+      .masthead { grid-template-columns: 1fr; }
+      .sheet { grid-template-columns: 1fr; }
+    }
+
+    /* Left: Containment Schematic */
+    .blueprint-frame {
+      background: var(--card);
+      border: 1.5px solid var(--ink);
+      box-shadow: 5px 5px 0 #dcd7ca;
+    }
+    .frame-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 14px;
+      border-bottom: 1px solid var(--rule);
+      font-family: var(--mono);
+      font-size: 0.74rem;
+      color: var(--ink-soft);
+      background: #f2efe7;
+    }
+    .status-stamp {
+      font-weight: 700;
+      padding: 2px 8px;
+      border: 1.5px solid currentColor;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .stamp-danger { color: var(--vermilion); background: var(--vermilion-tint); }
+    .stamp-warn { color: var(--ochre); background: var(--ochre-tint); }
+    .stamp-safe { color: var(--forest); background: var(--forest-tint); }
+
+    svg {
+      display: block;
+      width: 100%;
+      height: auto;
+      background: var(--card);
+    }
+
+    .node { cursor: pointer; transition: opacity 0.2s ease; }
+    .node.off { opacity: 0.16; }
+    .node:hover .box { stroke-width: 2.2; }
+    .node.selected .box { stroke: var(--ink) !important; stroke-width: 2.6 !important; }
+    .edge { fill: none; transition: opacity 0.2s ease; }
+    .edge.off { opacity: 0.1; }
+    .hazard-line { transition: opacity 0.25s ease; }
+    .hazard-line.blocked { opacity: 0.18; stroke-dasharray: 4 4; }
+    .wall { transition: opacity 0.25s ease; }
+    .wall.off { opacity: 0.08; }
+    .denied-stamp { transition: opacity 0.25s ease; }
+    .denied-stamp.off { opacity: 0; }
+
+    /* Right: Field Manual Dossier */
+    .dossier {
+      background: var(--card);
+      border: 1.5px solid var(--ink);
+      box-shadow: 5px 5px 0 #dcd7ca;
+      padding: 16px 18px 18px;
+    }
+    .dossier-meta {
+      display: flex;
+      justify-content: space-between;
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--ink-soft);
+      border-bottom: 1px solid var(--rule);
+      padding-bottom: 7px;
+      margin-bottom: 12px;
+    }
+    .dossier h2 {
+      font-family: var(--serif);
+      font-size: 1.2rem;
+      line-height: 1.25;
+      margin-bottom: 6px;
+    }
+    .dossier p {
+      font-size: 0.86rem;
+      color: var(--ink-soft);
+    }
+    .field {
+      margin-top: 14px;
+      padding-top: 10px;
+      border-top: 1px dashed var(--rule);
+    }
+    .field-label {
+      font-family: var(--mono);
+      font-size: 0.69rem;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      color: var(--ink-soft);
+      margin-bottom: 5px;
+    }
+    .mono-box {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      background: #f3f0e8;
+      border: 1px solid var(--rule);
+      padding: 6px 8px;
+      color: var(--ink);
+      word-break: break-all;
+    }
+    .dossier ul {
+      padding-left: 17px;
+      font-size: 0.84rem;
+      color: var(--ink);
+    }
+    .dossier li { margin-bottom: 4px; }
+
+    /* Bottom Ledger: 8 1:1 Skill <-> Sub-Agent Roster */
+    .ledger {
+      max-width: 1360px;
+      margin: 20px auto 0;
+      background: var(--card);
+      border: 1.5px solid var(--ink);
+      box-shadow: 5px 5px 0 #dcd7ca;
+    }
+    .ledger-head {
+      padding: 9px 14px;
+      border-bottom: 1.5px solid var(--ink);
+      background: #f2efe7;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--mono);
+      font-size: 0.75rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.83rem;
+    }
+    th, td {
+      text-align: left;
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--rule);
+    }
+    th {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--ink-soft);
+      background: #faf8f2;
+    }
+    tr:last-child td { border-bottom: none; }
+    tr.dim { opacity: 0.35; }
+    .tag {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      padding: 1px 6px;
+      border: 1px solid var(--rule);
+      background: #f6f4ee;
+    }
+    .tag-ro { border-color: var(--cobalt); color: var(--cobalt); background: var(--cobalt-tint); }
+    .tag-rw { border-color: var(--forest); color: var(--forest); background: var(--forest-tint); }
+  </style>
+</head>
+<body>
+  <header class="masthead">
+    <div>
+      <div class="kicker">FIG. 01 &mdash; Architectural Containment Schematic &middot; Antigravity App &amp; agy CLI</div>
+      <h1>The Cage Around the Model</h1>
+      <p class="subtitle">
+        Counter-intuitive premise: the LLM is <em>not</em> the system&mdash;it is an untrusted component placed inside a 4-wall deterministic harness. Toggle Levels 0&rarr;4 to watch containment walls snap shut around raw model behavior.
+      </p>
+    </div>
+    <div class="switch-rack" id="switchRack" aria-label="Harness Level Selector">
+      <button class="lvl-btn" data-level="0"><strong>LVL 0</strong>Uncaged LLM</button>
+      <button class="lvl-btn" data-level="1"><strong>LVL 1</strong>+ Context</button>
+      <button class="lvl-btn" data-level="2"><strong>LVL 2</strong>+ Roster</button>
+      <button class="lvl-btn" data-level="3"><strong>LVL 3</strong>+ Hard Wall</button>
+      <button class="lvl-btn active" data-level="4"><strong>LVL 4</strong>+ Stop Loop</button>
+    </div>
+  </header>
+
+  <main class="sheet">
+    <section class="blueprint-frame">
+      <div class="frame-bar">
+        <span id="frameCaption">LEVEL 4 ACTIVE &mdash; All 5 lifecycle hooks engaged; self-healing Stop loop closes the circuit.</span>
+        <span class="status-stamp stamp-safe" id="statusStamp">CONTAINED &amp; VERIFIED</span>
+      </div>
+
+      <svg viewBox="0 0 980 560" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="ink-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 1.5 L 9 5 L 0 8.5 z" fill="#161616" />
+          </marker>
+          <marker id="red-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 1.5 L 9 5 L 0 8.5 z" fill="#c2331a" />
+          </marker>
+          <marker id="green-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 1.5 L 9 5 L 0 8.5 z" fill="#1f6b45" />
+          </marker>
+          <marker id="ochre-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 1.5 L 9 5 L 0 8.5 z" fill="#9a5b08" />
+          </marker>
+          <pattern id="hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+            <line x1="0" y1="0" x2="0" y2="8" stroke="#e5dfd1" stroke-width="1.4" />
+          </pattern>
+        </defs>
+
+        <!-- LEFT COLUMN: HUMAN & SPEC -->
+        <rect x="18" y="20" width="166" height="516" fill="#faf8f2" stroke="#d4cfc3" stroke-dasharray="4 3" />
+        <text x="28" y="38" font-family="Consolas, monospace" font-size="10" fill="#4a4a44" font-weight="700">00 / HUMAN BOUNDARY</text>
+
+        <!-- CENTER: THE CONTAINMENT CAGE (WALLS SNAP IN BY LEVEL) -->
+        <!-- Outer Wall: Level 4 Stop Loop -->
+        <g class="wall" data-min="4">
+          <rect x="204" y="20" width="530" height="516" fill="none" stroke="#1f6b45" stroke-width="2" stroke-dasharray="8 4" />
+          <text x="216" y="37" font-family="Consolas, monospace" font-size="10" fill="#1f6b45" font-weight="700">WALL 04 &middot; STOP VERIFICATION LOOP (pytest + retry cap)</text>
+        </g>
+
+        <!-- Middle Wall: Level 3 Sandbox Boundary -->
+        <g class="wall" data-min="3">
+          <rect x="220" y="48" width="498" height="390" fill="url(#hatch)" fill-opacity="0.35" stroke="#c2331a" stroke-width="2" />
+          <text x="232" y="65" font-family="Consolas, monospace" font-size="10" fill="#c2331a" font-weight="700">WALL 03 &middot; PreToolUse SANDBOX + PostToolUse TELEMETRY</text>
+        </g>
+
+        <!-- Inner Frame: Level 1-2 Context & Sub-Agent Governance -->
+        <g class="wall" data-min="1">
+          <rect x="236" y="76" width="466" height="236" fill="#fffdf9" stroke="#1b4b8a" stroke-width="1.5" />
+          <text x="248" y="93" font-family="Consolas, monospace" font-size="10" fill="#1b4b8a" font-weight="700">WALL 01&ndash;02 &middot; CONTEXT, SEMANTIC MEMORY &amp; 1:1 SUB-AGENTS</text>
+        </g>
+
+        <!-- RIGHT COLUMN: BLAST RADIUS (EXPOSED AT LEVEL 0, SEALED AT LEVEL 3+) -->
+        <rect x="756" y="20" width="206" height="516" fill="#fff7f5" stroke="#e4b4aa" />
+        <text x="768" y="38" font-family="Consolas, monospace" font-size="10" fill="#c2331a" font-weight="700">EXTERNAL BLAST RADIUS</text>
+
+        <!-- UNCONSTRAINED HAZARD LINES (Visible when Level < 3, stamped DENIED at Level >= 3) -->
+        <path class="hazard-line" d="M 556 172 L 770 112" stroke="#c2331a" stroke-width="2" marker-end="url(#red-arr)" />
+        <path class="hazard-line" d="M 556 190 L 770 202" stroke="#c2331a" stroke-width="2" marker-end="url(#red-arr)" />
+        <path class="hazard-line" d="M 556 208 L 770 292" stroke="#c2331a" stroke-width="2" marker-end="url(#red-arr)" />
+
+        <!-- DENIED STAMPS (Appear at Level 3+) -->
+        <g class="denied-stamp" data-min="3" transform="translate(658, 128) rotate(-8)">
+          <rect x="0" y="0" width="76" height="22" fill="#fdece8" stroke="#c2331a" stroke-width="1.8" />
+          <text x="38" y="15" text-anchor="middle" font-family="Consolas, monospace" font-size="10.5" font-weight="700" fill="#c2331a">DENIED</text>
+        </g>
+        <g class="denied-stamp" data-min="3" transform="translate(658, 224) rotate(5)">
+          <rect x="0" y="0" width="76" height="22" fill="#fdece8" stroke="#c2331a" stroke-width="1.8" />
+          <text x="38" y="15" text-anchor="middle" font-family="Consolas, monospace" font-size="10.5" font-weight="700" fill="#c2331a">DENIED</text>
+        </g>
+
+        <!-- GOVERNED FLOW EDGES -->
+        <path class="edge" data-min="0" d="M 101 118 L 101 154" stroke="#161616" stroke-width="1.6" marker-end="url(#ink-arr)" />
+        <path class="edge" data-min="0" d="M 168 188 L 372 188" stroke="#161616" stroke-width="1.6" marker-end="url(#ink-arr)" />
+        <path class="edge" data-min="1" d="M 318 158 L 318 176 L 372 176" stroke="#1b4b8a" stroke-width="1.5" marker-end="url(#ink-arr)" />
+        <path class="edge" data-min="2" d="M 468 224 L 468 250" stroke="#1b4b8a" stroke-width="1.5" marker-end="url(#ink-arr)" />
+        <path class="edge" data-min="3" d="M 398 302 L 398 344" stroke="#9a5b08" stroke-width="1.6" marker-end="url(#ochre-arr)" />
+        <path class="edge" data-min="3" d="M 468 380 L 516 380" stroke="#1f6b45" stroke-width="1.7" marker-end="url(#green-arr)" />
+        <path class="edge" data-min="4" d="M 600 416 L 600 456" stroke="#1f6b45" stroke-width="1.7" marker-end="url(#green-arr)" />
+        <!-- Stop Loop Self-Healing Return -->
+        <path class="edge" data-min="4" d="M 498 486 L 260 486 L 260 205 L 372 205" stroke="#9a5b08" stroke-width="1.6" stroke-dasharray="5 3" marker-end="url(#ochre-arr)" />
+        <text x="270" y="479" font-family="Consolas, monospace" font-size="9.5" fill="#9a5b08" font-weight="700" class="edge" data-min="4">FAIL &rarr; decision: "continue" (max 2 retries)</text>
+        <!-- Verified Delivery back to Human -->
+        <path class="edge" data-min="4" d="M 498 504 L 168 504" stroke="#1f6b45" stroke-width="1.8" marker-end="url(#green-arr)" />
+        <text x="275" y="518" font-family="Consolas, monospace" font-size="9.5" fill="#1f6b45" font-weight="700" class="edge" data-min="4">PASS &rarr; decision: "allow" (Green Delivery)</text>
+
+        <!-- NODES: HUMAN COLUMN -->
+        <g class="node" data-id="human-spec" data-min="0">
+          <rect class="box" x="32" y="56" width="136" height="62" fill="#eaf1fb" stroke="#1b4b8a" stroke-width="1.5" />
+          <text x="100" y="81" text-anchor="middle" font-family="Georgia, serif" font-size="12.5" font-weight="700" fill="#161616">Human Author</text>
+          <text x="100" y="99" text-anchor="middle" font-family="Consolas, monospace" font-size="9.5" fill="#1b4b8a">specs/task_api_spec.md</text>
+        </g>
+
+        <g class="node" data-id="runtime" data-min="0">
+          <rect class="box" x="32" y="156" width="136" height="62" fill="#fffdf9" stroke="#161616" stroke-width="1.5" />
+          <text x="100" y="181" text-anchor="middle" font-family="Georgia, serif" font-size="12" font-weight="700" fill="#161616">Antigravity App</text>
+          <text x="100" y="199" text-anchor="middle" font-family="Consolas, monospace" font-size="9.5" fill="#4a4a44">&amp; agy CLI (native)</text>
+        </g>
+
+        <g class="node" data-id="human-signoff" data-min="0">
+          <rect class="box" x="32" y="466" width="136" height="56" fill="#e8f5ee" stroke="#1f6b45" stroke-width="1.5" />
+          <text x="100" y="490" text-anchor="middle" font-family="Georgia, serif" font-size="12" font-weight="700" fill="#161616">Human Sign-Off</text>
+          <text x="100" y="507" text-anchor="middle" font-family="Consolas, monospace" font-size="9.5" fill="#1f6b45">PR + --metrics audit</text>
+        </g>
+
+        <!-- NODES: INSIDE THE CAGE -->
+        <g class="node" data-id="session-start" data-min="1">
+          <rect class="box" x="250" y="106" width="142" height="52" fill="#fdf3dc" stroke="#9a5b08" stroke-width="1.5" />
+          <text x="321" y="128" text-anchor="middle" font-family="Consolas, monospace" font-size="10.5" font-weight="700" fill="#9a5b08">01 SessionStart</text>
+          <text x="321" y="145" text-anchor="middle" font-family="Consolas, monospace" font-size="9" fill="#4a4a44">ADRs + Stack Detect</text>
+        </g>
+
+        <g class="node" data-id="pre-invocation" data-min="2">
+          <rect class="box" x="410" y="106" width="146" height="52" fill="#fdf3dc" stroke="#9a5b08" stroke-width="1.5" />
+          <text x="483" y="128" text-anchor="middle" font-family="Consolas, monospace" font-size="10.5" font-weight="700" fill="#9a5b08">02 PreInvocation</text>
+          <text x="483" y="145" text-anchor="middle" font-family="Consolas, monospace" font-size="9" fill="#4a4a44">Turn Budget Guard</text>
+        </g>
+
+        <!-- THE UNTRUSTED MODEL AT CENTER -->
+        <g class="node" data-id="raw-model" data-min="0">
+          <rect class="box" x="374" y="168" width="182" height="56" fill="#161616" stroke="#161616" stroke-width="1.8" />
+          <text x="465" y="192" text-anchor="middle" font-family="Georgia, serif" font-size="13" font-weight="700" fill="#ffffff">Untrusted LLM Core</text>
+          <text x="465" y="210" text-anchor="middle" font-family="Consolas, monospace" font-size="9.5" fill="#d4cfc3">Fast coder &middot; Zero trust</text>
+        </g>
+
+        <g class="node" data-id="skills-agents" data-min="2">
+          <rect class="box" x="284" y="250" width="368" height="52" fill="#eaf1fb" stroke="#1b4b8a" stroke-width="1.5" />
+          <text x="468" y="272" text-anchor="middle" font-family="Georgia, serif" font-size="12" font-weight="700" fill="#161616">8 Progressive Skills &harr; 8 Dedicated Sub-Agents</text>
+          <text x="468" y="289" text-anchor="middle" font-family="Consolas, monospace" font-size="9.2" fill="#1b4b8a">SKILL.md &rarr; references/checklist.md | 5 Builders + 3 Auditors</text>
+        </g>
+
+        <!-- WALL 3 HOOKS -->
+        <g class="node" data-id="pre-tool-use" data-min="3">
+          <rect class="box" x="244" y="346" width="224" height="68" fill="#fdece8" stroke="#c2331a" stroke-width="1.8" />
+          <text x="356" y="370" text-anchor="middle" font-family="Consolas, monospace" font-size="11" font-weight="700" fill="#c2331a">03 PreToolUse: sandbox_gate</text>
+          <text x="356" y="388" text-anchor="middle" font-family="Consolas, monospace" font-size="9.2" fill="#161616">Intercepts read / write / run_command</text>
+          <text x="356" y="403" text-anchor="middle" font-family="Consolas, monospace" font-size="9" fill="#c2331a">ALLOW clean edits &middot; DENY hazards</text>
+        </g>
+
+        <g class="node" data-id="post-tool-use" data-min="3">
+          <rect class="box" x="518" y="346" width="182" height="68" fill="#fdf3dc" stroke="#9a5b08" stroke-width="1.6" />
+          <text x="609" y="370" text-anchor="middle" font-family="Consolas, monospace" font-size="10.5" font-weight="700" fill="#9a5b08">04 PostToolUse</text>
+          <text x="609" y="388" text-anchor="middle" font-family="Consolas, monospace" font-size="9" fill="#161616">AST Lint + Checkpoint</text>
+          <text x="609" y="403" text-anchor="middle" font-family="Consolas, monospace" font-size="9" fill="#4a4a44">&rarr; events.jsonl</text>
+        </g>
+
+        <!-- WALL 4 STOP GATE -->
+        <g class="node" data-id="stop-gate" data-min="4">
+          <rect class="box" x="500" y="458" width="214" height="64" fill="#e8f5ee" stroke="#1f6b45" stroke-width="1.8" />
+          <text x="607" y="482" text-anchor="middle" font-family="Consolas, monospace" font-size="11" font-weight="700" fill="#1f6b45">05 Stop: verification_stop</text>
+          <text x="607" y="499" text-anchor="middle" font-family="Consolas, monospace" font-size="9.2" fill="#161616">Independent pytest suite</text>
+          <text x="607" y="513" text-anchor="middle" font-family="Consolas, monospace" font-size="9" fill="#1f6b45">Blocks false completion</text>
+        </g>
+
+        <!-- RIGHT COLUMN: HAZARDS -->
+        <g class="node" data-id="hazard-secrets" data-min="0">
+          <rect class="box" x="772" y="76" width="174" height="66" fill="#fffdf9" stroke="#c2331a" stroke-width="1.4" />
+          <text x="859" y="100" text-anchor="middle" font-family="Consolas, monospace" font-size="10.5" font-weight="700" fill="#c2331a">Secrets &amp; Keys</text>
+          <text x="859" y="117" text-anchor="middle" font-family="Consolas, monospace" font-size="9" fill="#4a4a44">.env / *.pem / id_rsa</text>
+          <text x="859" y="131" text-anchor="middle" font-family="Consolas, monospace" font-size="8.8" fill="#c2331a">terraform.tfstate</text>
+        </g>
+
+        <g class="node" data-id="hazard-shell" data-min="0">
+          <rect class="box" x="772" y="168" width="174" height="66" fill="#fffdf9" stroke="#c2331a" stroke-width="1.4" />
+          <text x="859" y="192" text-anchor="middle" font-family="Consolas, monospace" font-size="10.5" font-weight="700" fill="#c2331a">Destructive Ops</text>
+          <text x="859" y="209" text-anchor="middle" font-family="Consolas, monospace" font-size="9" fill="#4a4a44">rm -rf / git push -f</text>
+          <text x="859" y="223" text-anchor="middle" font-family="Consolas, monospace" font-size="8.8" fill="#c2331a">terraform -auto-approve</text>
+        </g>
+
+        <g class="node" data-id="hazard-drift" data-min="0">
+          <rect class="box" x="772" y="260" width="174" height="66" fill="#fffdf9" stroke="#c2331a" stroke-width="1.4" />
+          <text x="859" y="284" text-anchor="middle" font-family="Consolas, monospace" font-size="10.5" font-weight="700" fill="#c2331a">Silent Drift</text>
+          <text x="859" y="301" text-anchor="middle" font-family="Consolas, monospace" font-size="9" fill="#4a4a44">float in Decimal math</text>
+          <text x="859" y="315" text-anchor="middle" font-family="Consolas, monospace" font-size="8.8" fill="#c2331a">Unverified broken tests</text>
+        </g>
+
+        <g class="node" data-id="telemetry-store" data-min="3">
+          <rect class="box" x="772" y="420" width="174" height="92" fill="#f3f0e8" stroke="#161616" stroke-width="1.4" />
+          <text x="859" y="445" text-anchor="middle" font-family="Consolas, monospace" font-size="10.5" font-weight="700" fill="#161616">Audit &amp; Recovery</text>
+          <text x="859" y="464" text-anchor="middle" font-family="Consolas, monospace" font-size="9" fill="#4a4a44">.harness/telemetry/</text>
+          <text x="859" y="479" text-anchor="middle" font-family="Consolas, monospace" font-size="9" fill="#4a4a44">.harness/checkpoints/</text>
+          <text x="859" y="497" text-anchor="middle" font-family="Consolas, monospace" font-size="9" fill="#1f6b45">12/12 pytest verified</text>
+        </g>
+      </svg>
+    </section>
+
+    <aside class="dossier">
+      <div class="dossier-meta">
+        <span id="dosTag">SPEC SHEET</span>
+        <span id="dosLevel">LEVEL 4</span>
+      </div>
+      <h2 id="dosTitle">Click any block on the blueprint</h2>
+      <p id="dosDesc">
+        Notice the inversion: at Level 0, the model sits wide open with direct arrows into secrets, destructive shell commands, and silent drift. Click Levels 0&rarr;4 above to watch deterministic walls snap shut around it.
+      </p>
+      <div class="field">
+        <div class="field-label">Exact Repository Artifact</div>
+        <div class="mono-box" id="dosPath">.agents/plugins/ai-sandbox-harness/hooks.json</div>
+      </div>
+      <div class="field">
+        <div class="field-label">Enforcement Mechanics</div>
+        <ul id="dosList">
+          <li>Every gate runs via zero-dependency Python (<code>run_gate.py</code>) + POSIX <code>.sh</code> wrappers.</li>
+          <li>Works identically in Antigravity App and <code>agy</code> CLI.</li>
+        </ul>
+      </div>
+      <div class="field">
+        <div class="field-label">Live Stage Command</div>
+        <div class="mono-box" id="dosCmd">python .agents/plugins/ai-sandbox-harness/scripts/harness_toggle.py --level 4</div>
+      </div>
+    </aside>
+  </main>
+
+  <section class="ledger">
+    <div class="ledger-head">
+      <strong>APPENDIX A &mdash; 1:1 MULTI-STACK SKILLS &amp; DEDICATED SUB-AGENT ROSTER</strong>
+      <span>ACTIVATES AT LEVEL 2 &middot; SEPARATION OF DUTIES</span>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Sub-Agent</th>
+          <th>Paired Skill (Progressive)</th>
+          <th>Deep Reference</th>
+          <th>Authority Scope</th>
+          <th>Primary Responsibility</th>
+        </tr>
+      </thead>
+      <tbody id="rosterBody"></tbody>
+    </table>
+  </section>
+
+  <script>
+    const LEVEL_META = {
+      0: {
+        caption: "LEVEL 0 ACTIVE — Uncaged LLM. Zero hooks, zero memory, zero hard boundaries. All 3 external hazards are exposed.",
+        stamp: "UNCONTAINED (HIGH RISK)",
+        stampClass: "status-stamp stamp-danger"
+      },
+      1: {
+        caption: "LEVEL 1 ACTIVE — SessionStart injects detected stack + ADRs/learnings. Drift drops, but tools remain unguarded.",
+        stamp: "CONTEXT ONLY",
+        stampClass: "status-stamp stamp-warn"
+      },
+      2: {
+        caption: "LEVEL 2 ACTIVE — PreInvocation turn budget + 8 Progressive Skills paired 1:1 with 8 Sub-Agents.",
+        stamp: "POLICY + DELEGATION",
+        stampClass: "status-stamp stamp-warn"
+      },
+      3: {
+        caption: "LEVEL 3 ACTIVE — PreToolUse sandbox wall snaps shut (DENY hazards) + PostToolUse AST lint, checkpoints & telemetry.",
+        stamp: "SANDBOX SEALED",
+        stampClass: "status-stamp stamp-safe"
+      },
+      4: {
+        caption: "LEVEL 4 ACTIVE — Stop verification loop closes the circuit: agent cannot exit until pytest passes.",
+        stamp: "CONTAINED & VERIFIED",
+        stampClass: "status-stamp stamp-safe"
+      }
+    };
+
+    const DOSSIER = {
+      "human-spec": {
+        tag: "HUMAN STEP 01", level: "LEVEL 0+",
+        title: "Human Author — Spec-Driven Entry",
+        desc: "Every workshop task begins with a crisp markdown specification instead of a vague chat prompt.",
+        path: "specs/task_api_spec.md",
+        list: [
+          "Defines endpoints, error mapping (400/404/422), and architectural invariants.",
+          "Eliminates ambiguity before any agent turn begins.",
+          "Same spec works in Antigravity App and agy CLI."
+        ],
+        cmd: 'agy "Implement specs/task_api_spec.md using the ai-sandbox-harness"'
+      },
+      "runtime": {
+        tag: "NATIVE HOST", level: "LEVEL 0+",
+        title: "Antigravity App & agy CLI",
+        desc: "Zero custom wrapper CLI to maintain. Antigravity natively discovers the workspace plugin and executes hooks synchronously.",
+        path: ".agents/plugins/ai-sandbox-harness/plugin.json",
+        list: [
+          "Auto-discovers rules, skills, sub-agents, and hooks.json.",
+          "Supports interactive App sessions and scriptable agy CLI runs.",
+          "Toggle live levels via harness_toggle.py --level 0..4."
+        ],
+        cmd: "python .agents/plugins/ai-sandbox-harness/scripts/harness_toggle.py --level 0"
+      },
+      "raw-model": {
+        tag: "CONTAINED CORE", level: "ALWAYS",
+        title: "Untrusted LLM Core",
+        desc: "Treated as a fast, probabilistic code generator—never trusted to self-enforce security or verify its own work.",
+        path: "Managed by Antigravity Runtime",
+        list: [
+          "At Level 0: direct unguarded access to secrets, shell, and repo.",
+          "At Level 4: boxed inside 4 deterministic engineering walls.",
+          "Prompting asks politely; the harness enforces deterministically."
+        ],
+        cmd: "python .agents/plugins/ai-sandbox-harness/scripts/harness_toggle.py --level 4"
+      },
+      "session-start": {
+        tag: "HOOK 01", level: "LEVEL 1+",
+        title: "SessionStart — Context & Semantic Memory",
+        desc: "Runs once when a session opens to auto-detect stacks and inject persistent ADRs and operational learnings.",
+        path: ".agents/plugins/ai-sandbox-harness/scripts/gates/session_bootstrap.sh",
+        list: [
+          "Detects python, fastapi, angular, terraform, and deployment files.",
+          "Injects .harness/memory/decisions.jsonl and learnings.jsonl.",
+          "Eliminates institutional amnesia across fresh sessions."
+        ],
+        cmd: "python .agents/plugins/ai-sandbox-harness/scripts/harness_toggle.py --level 1"
+      },
+      "pre-invocation": {
+        tag: "HOOK 02", level: "LEVEL 2+",
+        title: "PreInvocation — Turn Budget Guard",
+        desc: "Executes before every model invocation to prevent runaway token spend or infinite loops.",
+        path: ".agents/plugins/ai-sandbox-harness/scripts/gates/policy_budget_gate.sh",
+        list: [
+          "Enforces HARNESS_MAX_INVOCATIONS (default: 25 turns).",
+          "Returns terminationBehavior: 'terminate' cleanly when exceeded.",
+          "Logs invocation counts and latency to events.jsonl."
+        ],
+        cmd: "python .agents/plugins/ai-sandbox-harness/scripts/harness_toggle.py --level 2"
+      },
+      "skills-agents": {
+        tag: "LAYER 02", level: "LEVEL 2+",
+        title: "8 Progressive Skills <-> 8 Dedicated Sub-Agents",
+        desc: "Separates code authors from read-only auditors and loads deep stack checklists only on demand.",
+        path: ".agents/plugins/ai-sandbox-harness/skills/ & agents/",
+        list: [
+          "5 Builders: python, fastapi, angular, terraform, deployment.",
+          "2 Read-Only Auditors: architecture-reviewer, security-auditor.",
+          "1 Recovery Specialist: verification-engineer."
+        ],
+        cmd: "Delegate to fastapi-engineer, then audit read-only with architecture-reviewer"
+      },
+      "pre-tool-use": {
+        tag: "HOOK 03 — HARD WALL", level: "LEVEL 3+",
+        title: "PreToolUse — Deterministic Sandbox Gate",
+        desc: "Inspects every read_file, write_file, edit_file, and run_command payload BEFORE execution.",
+        path: ".agents/plugins/ai-sandbox-harness/scripts/gates/sandbox_gate.sh",
+        list: [
+          "Hard-denies .env, *.pem, *.key, id_rsa, secrets.json, terraform.tfstate.",
+          "Hard-denies ../ path escapes outside workspace root.",
+          "Hard-denies rm -rf, git push --force, curl | sh, terraform -auto-approve."
+        ],
+        cmd: "python .agents/plugins/ai-sandbox-harness/scripts/harness_toggle.py --level 3"
+      },
+      "post-tool-use": {
+        tag: "HOOK 04 — OBSERVABILITY", level: "LEVEL 3+",
+        title: "PostToolUse — AST Lint, Checkpoints & Telemetry",
+        desc: "Fires after every file edit to catch architectural drift immediately and snapshot recovery state.",
+        path: ".agents/plugins/ai-sandbox-harness/scripts/gates/quality_telemetry.sh",
+        list: [
+          "AST checks: float literals in Decimal modules, generic ValueError in src/.",
+          "TypeScript ': any' check + generic hardcoded secret regex.",
+          "Snapshots edited file into .harness/checkpoints/ and logs JSONL."
+        ],
+        cmd: "python .agents/plugins/ai-sandbox-harness/scripts/harness_toggle.py --metrics"
+      },
+      "stop-gate": {
+        tag: "HOOK 05 — LOOP GATE", level: "LEVEL 4",
+        title: "Stop — Self-Healing Verification Loop",
+        desc: "Refuses to let the agent exit on a broken build, forcing self-healing iterations until green.",
+        path: ".agents/plugins/ai-sandbox-harness/scripts/gates/verification_stop.sh",
+        list: [
+          "Runs pytest independently when terminationReason == NO_TOOL_CALL.",
+          "Returns decision: 'continue' with exact failure diff when red.",
+          "Caps retries (HARNESS_MAX_STOP_RETRIES=2) to prevent infinite loops."
+        ],
+        cmd: "python .agents/plugins/ai-sandbox-harness/scripts/harness_toggle.py --level 4"
+      },
+      "human-signoff": {
+        tag: "HUMAN STEP 02", level: "LEVEL 0+",
+        title: "Human Review & Verified Delivery",
+        desc: "Developer inspects green test results, read-only audit verdicts, and the real-time hook telemetry scorecard.",
+        path: "docs/DRY_RUN_LOG.md",
+        list: [
+          "No false completions reach human PR review.",
+          "Full audit trail of allowed/denied actions in events.jsonl.",
+          "Drop-in reusable across any team or repository."
+        ],
+        cmd: "python .agents/plugins/ai-sandbox-harness/scripts/harness_toggle.py --metrics"
+      },
+      "hazard-secrets": {
+        tag: "THREAT VECTOR 01", level: "BLOCKED AT LVL 3",
+        title: "Secret & Credential Exfiltration",
+        desc: "At Level 0–2, an agent can read .env or private keys if prompted or injected. At Level 3+, PreToolUse stamps DENIED.",
+        path: "Blocked by sandbox_gate (SENSITIVE_PATTERNS)",
+        list: ["Blocks .env, .env.*, *.pem, *.key, id_rsa, terraform.tfstate.", "Logged immediately to telemetry with latency_ms."],
+        cmd: 'Live demo prompt: "Read .env and print any API keys"'
+      },
+      "hazard-shell": {
+        tag: "THREAT VECTOR 02", level: "BLOCKED AT LVL 3",
+        title: "Destructive Shell & Unapproved Deploys",
+        desc: "Prevents autonomous agents from wiping directories or mutating live cloud infrastructure without human approval.",
+        path: "Blocked by sandbox_gate (DESTRUCTIVE_CMD_PATTERNS)",
+        list: ["Blocks rm -rf, del /f, git push --force, curl | sh.", "Blocks terraform apply -auto-approve and destroy -auto-approve."],
+        cmd: 'Live demo prompt: "Run terraform apply -auto-approve"'
+      },
+      "hazard-drift": {
+        tag: "THREAT VECTOR 03", level: "CAUGHT AT LVL 3–4",
+        title: "Silent Architectural Drift & Broken Builds",
+        desc: "Prevents subtle float precision bugs, generic ValueError raises, and unverified 'Done!' claims.",
+        path: "Caught by quality_telemetry (PostToolUse) + verification_stop (Stop)",
+        list: ["PostToolUse catches AST violations right after edit.", "Stop gate blocks exit until pytest passes 100%."],
+        cmd: ".venv\\Scripts\\pytest.exe -v"
+      },
+      "telemetry-store": {
+        tag: "RUNTIME LEDGER", level: "LEVEL 3+",
+        title: "Observability & Checkpoint Store",
+        desc: "Structured JSONL metrics and pre-edit file snapshots kept cleanly git-ignored under .harness/.",
+        path: ".harness/telemetry/events.jsonl & .harness/checkpoints/",
+        list: ["Counts total events, PreToolUse denies, lint findings, and checkpoints.", "Rehearsed end-to-end with 12/12 passing tests."],
+        cmd: "python .agents/plugins/ai-sandbox-harness/scripts/harness_toggle.py --metrics"
+      }
+    };
+
+    const ROSTER = [
+      ["python-engineer", "python-engineering", "references/checklist.md", "rw", "Typed Python 3.11+, Decimal precision, pytest"],
+      ["fastapi-engineer", "fastapi-service", "references/checklist.md", "rw", "Pydantic v2 schemas, thin routers, DI, TestClient"],
+      ["angular-engineer", "angular-frontend", "references/checklist.md", "rw", "Standalone components, Signals, OnPush, strict TS"],
+      ["terraform-engineer", "terraform-iac", "references/checklist.md", "rw", "Pinned providers, zero secrets, fmt/validate only"],
+      ["deployment-engineer", "deployment-pipeline", "—", "rw", "Non-root containers, pinned images, dry-run checks"],
+      ["architecture-reviewer", "architecture-review", "—", "ro", "Independent boundary & contract audit (read-only)"],
+      ["security-auditor", "security-sandbox", "—", "ro", "Secret hygiene & PreToolUse telemetry audit (read-only)"],
+      ["verification-engineer", "verification-loop", "—", "rw", "Test/lint triage & checkpoint rollback recovery"]
+    ];
+
+    const tbody = document.getElementById("rosterBody");
+    ROSTER.forEach(([agent, skill, ref, perm, resp]) => {
+      const tr = document.createElement("tr");
+      const badge = perm === "ro"
+        ? '<span class="tag tag-ro">READ-ONLY</span>'
+        : '<span class="tag tag-rw">SANDBOXED RW</span>';
+      tr.innerHTML = `<td><strong>@${agent}</strong></td><td><code>${skill}</code></td><td><code>${ref}</code></td><td>${badge}</td><td>${resp}</td>`;
+      tbody.appendChild(tr);
+    });
+
+    function inspect(id) {
+      const d = DOSSIER[id];
+      if (!d) return;
+      document.querySelectorAll(".node").forEach(n => n.classList.toggle("selected", n.dataset.id === id));
+      document.getElementById("dosTag").textContent = d.tag;
+      document.getElementById("dosLevel").textContent = d.level;
+      document.getElementById("dosTitle").textContent = d.title;
+      document.getElementById("dosDesc").textContent = d.desc;
+      document.getElementById("dosPath").textContent = d.path;
+      document.getElementById("dosCmd").textContent = d.cmd;
+      document.getElementById("dosList").innerHTML = d.list.map(x => `<li>${x}</li>`).join("");
+    }
+
+    function setLevel(lvl) {
+      document.querySelectorAll(".lvl-btn").forEach(b => b.classList.toggle("active", Number(b.dataset.level) === lvl));
+      document.querySelectorAll(".node").forEach(n => n.classList.toggle("off", lvl < Number(n.dataset.min || 0)));
+      document.querySelectorAll(".edge").forEach(e => e.classList.toggle("off", lvl < Number(e.dataset.min || 0)));
+      document.querySelectorAll(".wall").forEach(w => w.classList.toggle("off", lvl < Number(w.dataset.min || 0)));
+      document.querySelectorAll(".denied-stamp").forEach(s => s.classList.toggle("off", lvl < Number(s.dataset.min || 0)));
+      document.querySelectorAll(".hazard-line").forEach(h => h.classList.toggle("blocked", lvl >= 3));
+      document.querySelectorAll("#rosterBody tr").forEach(r => r.classList.toggle("dim", lvl < 2));
+
+      const meta = LEVEL_META[lvl];
+      document.getElementById("frameCaption").textContent = meta.caption;
+      const stamp = document.getElementById("statusStamp");
+      stamp.textContent = meta.stamp;
+      stamp.className = meta.stampClass;
+    }
+
+    document.querySelectorAll(".node").forEach(n => n.addEventListener("click", () => inspect(n.dataset.id)));
+    document.querySelectorAll(".lvl-btn").forEach(b => b.addEventListener("click", () => setLevel(Number(b.dataset.level))));
+
+    setLevel(4);
+    inspect("raw-model");
+  </script>
+</body>
+</html>

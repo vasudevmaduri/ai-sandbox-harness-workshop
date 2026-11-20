@@ -1,0 +1,5 @@
+{
+  "name": "ai-sandbox-harness",
+  "description": "Generic, multi-stack Antigravity Engineering Harness with lifecycle hooks (SessionStart, PreInvocation, PreToolUse, PostToolUse, Stop), 1:1 stack skills & sub-agents (Python, FastAPI, Angular, Terraform, Deployment), semantic memory, real-time telemetry, and checkpoint rollback.",
+  "author": "AI Harness Engineering Workshop"
+}

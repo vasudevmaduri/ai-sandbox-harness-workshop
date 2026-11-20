@@ -1,0 +1,62 @@
+{
+  "session-context-bootstrap": {
+    "enabled": true,
+    "SessionStart": [
+      {
+        "type": "command",
+        "command": "python ./scripts/gates/run_gate.py session_bootstrap",
+        "timeout": 15
+      }
+    ]
+  },
+  "invocation-policy-gate": {
+    "enabled": true,
+    "PreInvocation": [
+      {
+        "type": "command",
+        "command": "python ./scripts/gates/run_gate.py policy_budget_gate",
+        "timeout": 10
+      }
+    ]
+  },
+  "sandbox-tool-boundary": {
+    "enabled": true,
+    "PreToolUse": [
+      {
+        "matcher": "run_command|write_file|edit_file|read_file",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python ./scripts/gates/run_gate.py sandbox_gate",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  },
+  "post-edit-quality-telemetry": {
+    "enabled": true,
+    "PostToolUse": [
+      {
+        "matcher": "write_file|edit_file",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python ./scripts/gates/run_gate.py quality_telemetry",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  },
+  "stop-verification-loop": {
+    "enabled": true,
+    "Stop": [
+      {
+        "type": "command",
+        "command": "python ./scripts/gates/run_gate.py verification_stop",
+        "timeout": 30
+      }
+    ]
+  }
+}

@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+
+# Environment & Secrets
+.env
+.env.*
+!.env.example
+
+# Runtime Harness State (keep .harness/memory/ tracked)
+.harness/telemetry/
+.harness/checkpoints/
+.harness_runs/
+.pytest_cache/
+export/
+
+# IDE
+.vscode/
+.idea/
