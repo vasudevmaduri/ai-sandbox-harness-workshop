@@ -4,14 +4,23 @@ A concise, beginner-friendly reference guide for **Engineering the AI Sandbox: C
 
 ---
 
-## 1. Prerequisites
+## 1. Prerequisites and Zero-to-Ready Installs
 
-Before starting, make sure you have the following installed on your machine:
+No API key, credit card, or cloud billing account is required to run the harness, lifecycle gates, tests, or visualizer locally.
 
-- **Python 3.11 or higher** (verify with `python --version` or `python3 --version`)
-- **Git** (verify with `git --version`)
-- **Antigravity App** or **`agy` CLI** (signed in and ready to open a local workspace)
-- **A modern web browser** (to view the offline interactive visualizer at `docs/harness_visualizer.html`)
+If you are starting on a fresh machine, install these three tools first:
+
+1. **Python 3.11 or higher** (check with `python --version` or `python3 --version`):
+   - **Windows:** `winget install Python.Python.3.12` (or download from `https://www.python.org/downloads/` and check *"Add python.exe to PATH"*)
+   - **macOS:** `brew install python@3.12`
+   - **Ubuntu / Debian:** `sudo apt update && sudo apt install -y python3 python3-venv python3-pip`
+2. **Git** (check with `git --version`):
+   - **Windows:** `winget install Git.Git` (or `https://git-scm.com/downloads`)
+   - **macOS:** `brew install git` (or `xcode-select --install`)
+   - **Ubuntu / Debian:** `sudo apt install -y git`
+3. **Antigravity App or `agy` CLI** (for interactive agent sessions):
+   - Install Antigravity and sign in with your Google account. No separate `GEMINI_API_KEY` or `.env` file is needed for this workshop.
+   - *(Optional)* You can still run every lifecycle hook test, `pytest`, and the offline visualizer (`docs/harness_visualizer.html`) with Python alone even before installing Antigravity.
 
 ---
 
