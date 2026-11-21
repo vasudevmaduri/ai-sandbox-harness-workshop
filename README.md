@@ -4,6 +4,20 @@ A concise, beginner-friendly reference guide for **Engineering the AI Sandbox: C
 
 ---
 
+## Workshop Intent and Core Concepts
+
+As AI coding tools evolve from reactive chat assistants into autonomous workers, writing better prompts is no longer enough. The intent of this workshop is to show how to engineer the **environment around the LLM** so autonomous agents respect your architecture, stay inside strict safety boundaries, and verify their own work before finishing.
+
+Five core concepts drive everything in this repository:
+
+1. **From Prompting to Harness Engineering:** Prompting asks an LLM politely to follow rules; a **Harness** enforces those rules deterministically in code around every tool call and exit check.
+2. **Spec-Driven Context and Progressive Disclosure:** Every task starts from a clear specification (`specs/task_api_spec.md`). Rules (`AGENTS.md`), skills (`SKILL.md`), and deep checklists (`references/checklist.md`) load progressively so the context window stays clean and accurate.
+3. **Semantic Memory:** Instead of starting every session with amnesia, the harness stores Architectural Decision Records (`.harness/memory/decisions.jsonl`) and operational learnings (`learnings.jsonl`) and injects them automatically at `SessionStart`.
+4. **Hard Sandbox Boundaries and 1:1 Sub-Agents:** A `PreToolUse` gate blocks secret reads (`.env`, keys), path escapes, and destructive commands (`rm -rf`, `terraform apply -auto-approve`) before execution, while 8 specialized sub-agents separate code authors from read-only auditors.
+5. **Loop Engineering, Observability, and Recovery:** `PostToolUse` runs static checks, logs JSONL telemetry, and snapshots checkpoints after every edit; the `Stop` gate runs `pytest` on exit and forces self-healing (`decision: "continue"`) until the build is green.
+
+---
+
 ## 1. Prerequisites and Zero-to-Ready Installs
 
 No API key, credit card, or cloud billing account is required to run the harness, lifecycle gates, tests, or visualizer locally.
